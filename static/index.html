@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f4f1ea">
+  <title>求职作战室 · 秋招与 Hot 100</title>
+  <meta name="description" content="本地运行的秋招投递与 LeetCode Hot 100 进度看板">
+  <link rel="stylesheet" href="/styles.css?v=10">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">W</div>
+        <div><strong>求职作战室</strong><span>2027 秋招计划 · v10</span></div>
+      </div>
+      <nav class="nav" aria-label="主导航">
+        <button class="nav-item active" data-view="overview"><span>◫</span>总览</button>
+        <button class="nav-item" data-view="applications"><span>◎</span>秋招投递</button>
+        <button class="nav-item" data-view="reviews"><span>✦</span>面经复盘</button>
+        <button class="nav-item" data-view="hot100"><span>⌘</span>Hot 100</button>
+        <button class="nav-item" data-view="data"><span>⇄</span>数据管理</button>
+      </nav>
+      <div class="sidebar-foot">
+        <div class="local-badge"><i></i><div><strong>本地数据</strong><span>自动保存已开启</span></div></div>
+        <button id="themeToggle" class="icon-button wide" aria-label="切换主题"><span>◐</span><span>切换主题</span></button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <button id="menuToggle" class="icon-button menu-button" aria-label="打开菜单">☰</button>
+        <div>
+          <p id="eyebrow" class="eyebrow">SAT · 22 AUG</p>
+          <h1 id="pageTitle">今天也向前一步。</h1>
+        </div>
+        <div class="top-actions">
+          <label class="global-search"><span>⌕</span><input id="globalSearch" type="search" placeholder="搜索公司或题目…"></label>
+          <button id="notificationButton" class="icon-button notify" aria-label="查看提醒">♢<b id="notificationCount">0</b></button>
+          <button class="primary-button" data-action="add-application">＋ 新增投递</button>
+        </div>
+      </header>
+
+      <div id="saveState" class="save-state">已保存</div>
+
+      <section id="view-overview" class="view active">
+        <div id="overviewStats" class="stats-grid"></div>
+        <div class="overview-grid">
+          <article class="panel focus-panel">
+            <div class="panel-head"><div><p class="kicker">FOCUS</p><h2>近期关键节点</h2></div><button class="text-button" data-view-link="applications">查看全部 →</button></div>
+            <div id="upcomingList" class="upcoming-list"></div>
+          </article>
+          <article class="panel progress-panel">
+            <div class="panel-head"><div><p class="kicker">HOT 100</p><h2>刷题进度</h2></div><button class="text-button" data-view-link="hot100">继续刷题 →</button></div>
+            <div id="hotProgress" class="hot-progress"></div>
+          </article>
+          <article class="panel funnel-panel">
+            <div class="panel-head"><div><p class="kicker">PIPELINE</p><h2>投递转化</h2></div></div>
+            <div id="funnelChart" class="funnel-chart"></div>
+          </article>
+          <article class="panel review-panel">
+            <div class="panel-head"><div><p class="kicker">REVIEW</p><h2>复习队列</h2></div><span id="reviewBadge" class="count-badge">0</span></div>
+            <div id="reviewList" class="review-list"></div>
+          </article>
+        </div>
+      </section>
+
+      <section id="view-applications" class="view">
+        <div class="section-heading">
+          <div><p class="kicker">APPLICATIONS</p><h2>秋招投递</h2><p>把每一次投递，推进到下一步。</p></div>
+          <div class="segmented"><button class="active" data-job-view="table">表格</button><button data-job-view="kanban">看板</button></div>
+        </div>
+        <div class="toolbar">
+          <label class="search-field"><span>⌕</span><input id="jobSearch" type="search" placeholder="搜索公司、岗位、城市"></label>
+          <select id="jobStatusFilter" aria-label="筛选投递状态"><option value="">全部进度</option></select>
+          <select id="jobPriorityFilter" aria-label="筛选优先级"><option value="">全部优先级</option><option>高</option><option>中</option><option>低</option></select>
+          <select id="jobSort" aria-label="投递排序"><option value="updated">最近更新</option><option value="applyDate-desc">投递日期 ↓</option><option value="company">公司 A–Z</option><option value="priority">优先级</option></select>
+          <button class="primary-button" data-action="add-application">＋ 新增投递</button>
+        </div>
+        <div id="jobTableWrap" class="table-wrap"><table class="data-table"><thead><tr><th>公司 / 岗位</th><th>城市</th><th>投递日期</th><th>当前进度</th><th>优先级</th><th>下一节点</th><th></th></tr></thead><tbody id="jobTable"></tbody></table></div>
+        <div id="jobKanban" class="kanban" hidden></div>
+      </section>
+
+      <section id="view-hot100" class="view">
+        <div class="section-heading">
+          <div><p class="kicker">LEETCODE STUDY PLAN</p><h2>Hot 100 刷题记录</h2><p>先形成模式，再追求速度。完整内置官方经典题单。</p></div>
+          <div id="hotSummary" class="mini-summary"></div>
+        </div>
+        <div class="toolbar hot-toolbar">
+          <label class="search-field"><span>⌕</span><input id="problemSearch" type="search" placeholder="搜索题号或题名"></label>
+          <select id="problemCategory"><option value="">全部类型</option></select>
+          <select id="problemDifficulty"><option value="">全部难度</option><option>简单</option><option>中等</option><option>困难</option></select>
+          <select id="problemStatus"><option value="">全部状态</option><option>未开始</option><option>进行中</option><option>已完成</option><option>待复习</option></select>
+          <select id="problemMastery"><option value="">全部掌握程度</option><option value="unset">未评估</option><option value="1">★ 一星</option><option value="2">★★ 二星</option><option value="3">★★★ 三星</option></select>
+          <select id="problemSort"><option value="official">官方顺序</option><option value="number">题号</option><option value="difficulty">难度</option><option value="review">下次复习</option></select>
+        </div>
+        <div class="category-strip" id="categoryStrip"></div>
+        <div class="table-wrap problem-table-wrap"><table class="data-table problem-table"><thead><tr><th>状态</th><th>题目</th><th>难度</th><th>类型</th><th>掌握程度</th><th>首次完成</th><th>复习</th><th></th></tr></thead><tbody id="problemTable"></tbody></table></div>
+        <div id="problemEmpty" class="empty-state" hidden><span>⌕</span><strong>没有匹配的题目</strong><p>换一个筛选条件试试。</p></div>
+      </section>
+
+      <section id="view-reviews" class="view">
+        <div class="section-heading">
+          <div><p class="kicker">INTERVIEW RETROSPECTIVE</p><h2>面经复盘</h2><p>把一场面试的得失，沉淀成下一场的胜率。</p></div>
+          <button class="primary-button" data-action="add-review">＋ 新增复盘</button>
+        </div>
+        <div id="reviewStats" class="stats-grid review-stats"></div>
+        <div class="toolbar">
+          <label class="search-field"><span>⌕</span><input id="reviewSearch" type="search" placeholder="搜索公司、岗位或面试题"></label>
+          <select id="reviewRoundFilter"><option value="">全部轮次</option><option>笔试</option><option>一面</option><option>二面</option><option>三面/多面</option><option>HR面</option><option>其他</option></select>
+          <select id="reviewResultFilter"><option value="">全部结果</option><option>待定</option><option>通过</option><option>未通过</option><option>主动放弃</option></select>
+          <select id="reviewSort"><option value="date-desc">面试日期 ↓</option><option value="rating-desc">自评分数 ↓</option><option value="company">公司 A–Z</option></select>
+        </div>
+        <div id="reviewCards" class="retrospective-grid"></div>
+        <div id="reviewEmpty" class="empty-state" hidden><span>✦</span><strong>还没有面经复盘</strong><p>结束面试后及时记录，下一场会更从容。</p></div>
+      </section>
+
+      <section id="view-data" class="view">
+        <div class="section-heading"><div><p class="kicker">DATA & SETTINGS</p><h2>数据管理</h2><p>所有内容都保存在本目录，离线可用。</p></div></div>
+        <div class="settings-grid">
+          <article class="panel settings-card"><span class="card-icon">↓</span><h3>导入投递记录</h3><p>支持 Excel（.xlsx）、CSV 和完整 JSON 备份。导入前不会改动原文件。</p><input id="importFile" type="file" accept=".xlsx,.csv,.tsv,.json" hidden><button id="importButton" class="secondary-button">选择文件导入</button></article>
+          <article class="panel settings-card"><span class="card-icon">↑</span><h3>导出与备份</h3><p>Excel/CSV 适合继续处理，JSON 可完整恢复刷题笔记与设置。</p><div class="button-row"><a class="secondary-button" href="/api/export/xlsx">Excel</a><a class="secondary-button" href="/api/export/csv">CSV</a><a class="secondary-button" href="/api/export/json">完整备份</a></div></article>
+          <article class="panel settings-card"><span class="card-icon">♢</span><h3>后台提醒</h3><p>网页关闭后，本地服务仍会提醒笔试、面试和题目复习。</p><label class="toggle-row"><span><strong>启用提醒</strong><small>提前 <input id="leadHours" type="number" min="1" max="168"> 小时</small></span><input id="reminderToggle" type="checkbox" class="switch"></label><button id="testNotification" class="secondary-button">发送测试通知</button></article>
+          <article class="panel settings-card path-card"><span class="card-icon">⌂</span><h3>本地存储位置</h3><p>应用数据、每日备份和运行日志均保存在项目目录内：</p><code>data · backups · logs</code><div class="storage-status"><i></i>本地服务运行正常</div></article>
+        </div>
+        <article class="panel data-note"><div><strong>建议每周导出一次完整备份</strong><p>自动保存会在每天首次修改时保留一份快照，位于 backups 文件夹。</p></div><span id="lastSaved">尚未保存</span></article>
+      </section>
+    </main>
+  </div>
+
+  <div id="modalBackdrop" class="modal-backdrop" hidden></div>
+  <dialog id="applicationDialog" class="dialog">
+    <form id="applicationForm" method="dialog">
+      <div class="dialog-head"><div><p class="kicker">APPLICATION</p><h2 id="applicationDialogTitle">新增投递</h2></div><button type="button" class="close-button" data-close>×</button></div>
+      <input type="hidden" name="id">
+      <div class="form-grid">
+        <label><span>公司 *</span><input name="company" required placeholder="例如：字节跳动"></label>
+        <label><span>岗位 *</span><input name="position" required placeholder="例如：后端开发工程师"></label>
+        <label><span>城市</span><input name="city" placeholder="北京 / 上海 / 深圳"></label>
+        <label><span>投递渠道</span><input name="channel" placeholder="官网 / 内推 / Boss"></label>
+        <label><span>投递日期</span><input name="applyDate" type="date"></label>
+        <label><span>当前进度</span><select name="status"></select></label>
+        <label><span>笔试时间</span><input name="writtenAt" type="datetime-local"></label>
+        <label><span>面试时间</span><input name="interviewAt" type="datetime-local"></label>
+        <label><span>优先级</span><select name="priority"><option>高</option><option selected>中</option><option>低</option></select></label>
+        <label><span>薪资</span><input name="salary" placeholder="例如：25–35K × 15"></label>
+        <label class="full"><span>岗位链接</span><input name="link" type="url" placeholder="https://"></label>
+        <label class="full"><span>备注</span><textarea name="notes" rows="4" placeholder="面经、联系人、准备重点…"></textarea></label>
+      </div>
+      <div class="dialog-actions"><button id="deleteApplication" type="button" class="danger-button" hidden>删除</button><span></span><button type="button" class="secondary-button" data-close>取消</button><button type="submit" class="primary-button">保存投递</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="problemDialog" class="dialog problem-dialog">
+    <form id="problemForm" method="dialog">
+      <div class="dialog-head"><div><p id="problemDialogCategory" class="kicker">HOT 100</p><h2 id="problemDialogTitle">题目记录</h2></div><button type="button" class="close-button" data-close>×</button></div>
+      <input type="hidden" name="id">
+      <div class="problem-meta"><div id="problemMeta"></div></div>
+      <div class="form-grid">
+        <label><span>完成状态</span><select name="status"><option>未开始</option><option>进行中</option><option>已完成</option><option>待复习</option></select></label>
+        <label><span>首次完成时间</span><input name="firstSolvedAt" type="datetime-local"></label>
+        <label><span>复习次数</span><input name="reviewCount" type="number" min="0"></label>
+        <label><span>下次复习时间</span><input name="nextReviewAt" type="datetime-local"></label>
+        <div class="mastery-field full">
+          <div><span>掌握程度</span><small>一星薄弱 · 二星基本掌握 · 三星熟练</small></div>
+          <input name="mastery" type="hidden" value="">
+          <div class="mastery-picker" role="radiogroup" aria-label="掌握程度">
+            <button type="button" data-mastery="1" aria-label="一星，薄弱">★</button>
+            <button type="button" data-mastery="2" aria-label="二星，基本掌握">★</button>
+            <button type="button" data-mastery="3" aria-label="三星，熟练">★</button>
+            <button type="button" class="clear-mastery" data-mastery="" aria-label="清除掌握程度">清除评估</button>
+          </div>
+        </div>
+        <div class="markdown-controls full">
+          <div><strong>Markdown 笔记</strong><small id="markdownModeHint">输入框保存 Markdown 源码，切换到“渲染预览”查看排版效果</small></div>
+          <div class="segmented markdown-mode" aria-label="Markdown 查看模式"><button type="button" data-markdown-mode="edit">编辑源码</button><button type="button" class="active" data-markdown-mode="preview">渲染预览</button></div>
+        </div>
+        <div class="markdown-field full" data-markdown-field="thoughts">
+          <div class="markdown-field-head"><span>解题思路</span><div class="markdown-toolbar" aria-label="解题思路 Markdown 工具栏"><button type="button" data-md-action="h1">H1</button><button type="button" data-md-action="h2">H2</button><button type="button" data-md-action="h3">H3</button><button type="button" data-md-action="bold"><b>B</b></button><button type="button" data-md-action="inline-code">`代码`</button><button type="button" data-md-action="list">• 列表</button><select data-code-language aria-label="代码语言"><option value="go">Go</option><option value="python">Python</option><option value="javascript">JavaScript</option><option value="typescript">TypeScript</option><option value="java">Java</option><option value="c">C</option><option value="cpp">C++</option><option value="csharp">C#</option><option value="rust">Rust</option><option value="sql">SQL</option><option value="bash">Shell</option><option value="json">JSON</option><option value="html">HTML</option><option value="css">CSS</option></select><button type="button" data-md-action="code">&lt;/&gt; 代码块</button></div></div>
+          <textarea name="thoughts" rows="8" placeholder="# 核心思路&#10;&#10;- 关键步骤&#10;- 复杂度分析&#10;&#10;```go&#10;func solve() {}&#10;```"></textarea>
+          <div class="markdown-preview" data-markdown-preview="thoughts" hidden></div>
+        </div>
+        <div class="markdown-field full" data-markdown-field="mistakes">
+          <div class="markdown-field-head"><span>错误原因</span><div class="markdown-toolbar" aria-label="错误原因 Markdown 工具栏"><button type="button" data-md-action="h1">H1</button><button type="button" data-md-action="h2">H2</button><button type="button" data-md-action="h3">H3</button><button type="button" data-md-action="bold"><b>B</b></button><button type="button" data-md-action="inline-code">`代码`</button><button type="button" data-md-action="list">• 列表</button><select data-code-language aria-label="代码语言"><option value="go">Go</option><option value="python">Python</option><option value="javascript">JavaScript</option><option value="typescript">TypeScript</option><option value="java">Java</option><option value="c">C</option><option value="cpp">C++</option><option value="csharp">C#</option><option value="rust">Rust</option><option value="sql">SQL</option><option value="bash">Shell</option><option value="json">JSON</option><option value="html">HTML</option><option value="css">CSS</option></select><button type="button" data-md-action="code">&lt;/&gt; 代码块</button></div></div>
+          <textarea name="mistakes" rows="6" placeholder="## 易错点&#10;&#10;- 边界条件遗漏&#10;- 状态定义不清"></textarea>
+          <div class="markdown-preview" data-markdown-preview="mistakes" hidden></div>
+        </div>
+      </div>
+      <div class="dialog-actions"><a id="leetcodeLink" class="text-button external" target="_blank" rel="noreferrer">在力扣打开 ↗</a><span></span><button type="button" class="secondary-button" data-close>取消</button><button type="submit" class="primary-button">保存记录</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="reviewDialog" class="dialog review-dialog">
+    <form id="reviewForm" method="dialog">
+      <div class="dialog-head"><div><p class="kicker">RETROSPECTIVE</p><h2 id="reviewDialogTitle">新增面经复盘</h2></div><button type="button" class="close-button" data-close>×</button></div>
+      <input type="hidden" name="id">
+      <div class="form-grid">
+        <label><span>关联投递</span><select name="applicationId"><option value="">不关联投递</option></select></label>
+        <label><span>面试日期</span><input name="interviewDate" type="datetime-local"></label>
+        <label><span>公司 *</span><input name="company" required placeholder="例如：字节跳动"></label>
+        <label><span>岗位 *</span><input name="position" required placeholder="例如：后端开发工程师"></label>
+        <label><span>面试轮次</span><select name="round"><option>笔试</option><option selected>一面</option><option>二面</option><option>三面/多面</option><option>HR面</option><option>其他</option></select></label>
+        <label><span>结果</span><select name="result"><option selected>待定</option><option>通过</option><option>未通过</option><option>主动放弃</option></select></label>
+        <label><span>自评（1–5）</span><input name="rating" type="number" min="1" max="5" value="3"></label>
+        <label><span>面试官 / 形式</span><input name="format" placeholder="视频面试 / 现场 / 交叉面"></label>
+        <label class="full"><span>面试题与追问</span><textarea name="questions" rows="6" placeholder="每道题单独一行，记录追问和自己的回答…"></textarea></label>
+        <label class="full"><span>发挥得好的地方</span><textarea name="strengths" rows="3" placeholder="表达、思路、项目亮点、知识点…"></textarea></label>
+        <label class="full"><span>暴露的问题</span><textarea name="gaps" rows="4" placeholder="知识盲区、回答不清晰、代码细节、节奏问题…"></textarea></label>
+        <label class="full"><span>下一步行动</span><textarea name="actions" rows="3" placeholder="补知识点、重写代码、整理项目表达、模拟面试…"></textarea></label>
+      </div>
+      <div class="dialog-actions"><button id="deleteReview" type="button" class="danger-button" hidden>删除</button><span></span><button type="button" class="secondary-button" data-close>取消</button><button type="submit" class="primary-button">保存复盘</button></div>
+    </form>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="/app.js?v=10" defer></script>
+</body>
+</html>
