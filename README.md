@@ -1,6 +1,6 @@
 # 求职作战室
 
-![image-20260822224259051](https://gitee.com/binary-whispers/pic/raw/master///20260822224348104.png)
+![求职作战室总览](./docs/images/overview.png)
 
 一个面向秋招、实习和校招准备的 Windows 本地看板，集中管理岗位投递、面经复盘与 LeetCode Hot 100 刷题记录。
 
@@ -14,7 +14,7 @@
 
 ### 秋招投递看板
 
-![image-20260822224317604](https://gitee.com/binary-whispers/pic/raw/master///20260822224342915.png)
+![秋招投递看板](./docs/images/applications.png)
 
 - 记录公司、岗位、城市、投递渠道、投递日期、当前阶段和优先级。
 - 可补充笔试时间、面试时间、薪资范围、岗位链接和备注。
@@ -23,7 +23,7 @@
 
 ### Hot 100 刷题记录
 
-![image-20260822224334087](https://gitee.com/binary-whispers/pic/raw/master///20260822224338147.png)
+![Hot 100 刷题记录](./docs/images/hot100.png)
 
 - 内置完整的 LeetCode Hot 100 题目及题号、难度、分类和题目链接。
 - 每道题可记录完成状态、首次完成时间、解题思路、错误原因、复习次数和下次复习时间。
@@ -34,7 +34,7 @@
 
 ### Markdown 刷题笔记
 
-![image-20260822224416801](https://gitee.com/binary-whispers/pic/raw/master///20260822224418343.png)
+![Markdown 刷题笔记](./docs/images/markdown-notes.png)
 
 “解题思路”和“错误原因”支持安全的轻量 Markdown：
 
@@ -76,7 +76,7 @@ func twoSum(nums []int, target int) []int {
 
 ### 面经复盘
 
-![image-20260822224440873](https://gitee.com/binary-whispers/pic/raw/master///20260822224442695.png)
+![面经复盘](./docs/images/interview-reviews.png)
 
 - 可关联已有投递，也可单独创建。
 - 记录公司、岗位、面试日期、轮次、形式、结果和自评分数。
@@ -85,7 +85,7 @@ func twoSum(nums []int, target int) []int {
 
 ### 本地提醒
 
-![image-20260822224513385](https://gitee.com/binary-whispers/pic/raw/master///20260822224516477.png)
+![后台提醒](./docs/images/notifications.png)
 
 - 覆盖笔试时间、面试时间和 Hot 100 下次复习时间。
 - 默认提前 24 小时提醒，可设置为 1–168 小时。
@@ -94,7 +94,7 @@ func twoSum(nums []int, target int) []int {
 
 ### 数据管理
 
-![](https://gitee.com/binary-whispers/pic/raw/master///20260822224516477.png)
+![数据管理](./docs/images/notifications.png)
 
 - 自动保存所有修改。
 - 每天首次修改前在 `backups` 中保留一份数据快照。
@@ -298,4 +298,3 @@ git check-ignore data/state.json logs/server.log
 祝大家都能拿到自己满意的 offer~
 
 也欢迎各位朋友一起讨论交流~
-
