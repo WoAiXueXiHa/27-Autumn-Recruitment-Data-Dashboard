@@ -7,6 +7,7 @@ let state = null;
 let currentView = "overview";
 let jobView = "table";
 let saveTimer = null;
+let savePromise = Promise.resolve(true);
 let toastTimer = null;
 
 document.addEventListener("DOMContentLoaded", boot);
@@ -54,6 +55,7 @@ function bindStaticEvents() {
   $("#deleteReview").addEventListener("click", deleteCurrentReview);
   $("#importButton").addEventListener("click", () => $("#importFile").click());
   $("#importFile").addEventListener("change", importFile);
+  $("#exportHot100").addEventListener("click", exportHot100Markdown);
   $("#reminderToggle").addEventListener("change", event => { state.settings.reminders = event.target.checked; scheduleSave(); });
   $("#leadHours").addEventListener("change", event => { state.settings.reminderLeadHours = Math.max(1, Math.min(168, Number(event.target.value) || 24)); scheduleSave(); });
   $("#testNotification").addEventListener("click", testNotification);
@@ -80,6 +82,8 @@ function renderAll() {
   $("#reminderToggle").checked = state.settings?.reminders !== false;
   $("#leadHours").value = state.settings?.reminderLeadHours || 24;
   $("#lastSaved").textContent = state.updatedAt ? `上次保存：${formatDateTime(state.updatedAt)}` : "尚未保存";
+  const noteCount = state.problems.filter(problem => String(problem.thoughts || "").trim()).length;
+  $("#exportHot100").textContent = `Hot 100 思路（${noteCount}）`;
   renderOverview();
   renderApplications();
   renderReviews();
@@ -613,20 +617,70 @@ function quickToggleProblem(id) {
 function openDialog(dialog) { $("#modalBackdrop").hidden = false; dialog.showModal(); }
 function closeDialogs() { $$('dialog[open]').forEach(dialog => dialog.close()); $("#modalBackdrop").hidden = true; }
 
-async function scheduleSave() {
+function scheduleSave() {
   if (!state) return;
   clearTimeout(saveTimer);
   showSaveState("正在保存…");
-  saveTimer = setTimeout(async () => {
-    try {
-      const response = await fetch("/api/state", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(state) });
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.error || "保存失败");
-      state.updatedAt = result.updatedAt;
-      $("#lastSaved").textContent = `上次保存：${formatDateTime(result.updatedAt)}`;
-      showSaveState("已保存");
-    } catch (error) { showSaveState("保存失败，请勿关闭"); showToast("保存失败，请检查本地服务"); }
+  saveTimer = setTimeout(() => {
+    saveTimer = null;
+    queueSaveNow().catch(() => {});
   }, 450);
+}
+
+function queueSaveNow() {
+  savePromise = savePromise.catch(() => false).then(persistState);
+  return savePromise;
+}
+
+async function persistState() {
+  try {
+    const response = await fetch("/api/state", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(state) });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || "保存失败");
+    state.updatedAt = result.updatedAt;
+    $("#lastSaved").textContent = `上次保存：${formatDateTime(result.updatedAt)}`;
+    showSaveState("已保存");
+    return true;
+  } catch (error) {
+    showSaveState("保存失败，请勿关闭");
+    showToast("保存失败，请检查本地服务");
+    throw error;
+  }
+}
+
+async function flushPendingSave() {
+  if (saveTimer) {
+    clearTimeout(saveTimer);
+    saveTimer = null;
+    return queueSaveNow();
+  }
+  return savePromise;
+}
+
+async function exportHot100Markdown() {
+  const button = $("#exportHot100");
+  button.disabled = true;
+  try {
+    await flushPendingSave();
+    const response = await fetch("/api/export/hot100.md", { cache: "no-store" });
+    if (!response.ok) throw new Error("导出失败");
+    const disposition = response.headers.get("Content-Disposition") || "";
+    const match = disposition.match(/filename\*=UTF-8''([^;]+)/i);
+    const filename = match ? decodeURIComponent(match[1]) : "hot100-notes.md";
+    const url = URL.createObjectURL(await response.blob());
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+    showToast("Hot 100 思路已导出");
+  } catch (error) {
+    showToast("导出失败：请确认数据已经保存");
+  } finally {
+    button.disabled = false;
+  }
 }
 
 async function importFile(event) {

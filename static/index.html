@@ -6,14 +6,14 @@
   <meta name="theme-color" content="#f4f1ea">
   <title>求职作战室 · 秋招与 Hot 100</title>
   <meta name="description" content="本地运行的秋招投递与 LeetCode Hot 100 进度看板">
-  <link rel="stylesheet" href="/styles.css?v=10">
+  <link rel="stylesheet" href="/styles.css?v=11">
 </head>
 <body>
   <div class="app-shell">
     <aside class="sidebar">
       <div class="brand">
         <div class="brand-mark">W</div>
-        <div><strong>求职作战室</strong><span>2027 秋招计划 · v10</span></div>
+        <div><strong>求职作战室</strong><span>2027 秋招计划 · v11</span></div>
       </div>
       <nav class="nav" aria-label="主导航">
         <button class="nav-item active" data-view="overview"><span>◫</span>总览</button>
@@ -120,7 +120,7 @@
         <div class="section-heading"><div><p class="kicker">DATA & SETTINGS</p><h2>数据管理</h2><p>所有内容都保存在本目录，离线可用。</p></div></div>
         <div class="settings-grid">
           <article class="panel settings-card"><span class="card-icon">↓</span><h3>导入投递记录</h3><p>支持 Excel（.xlsx）、CSV 和完整 JSON 备份。导入前不会改动原文件。</p><input id="importFile" type="file" accept=".xlsx,.csv,.tsv,.json" hidden><button id="importButton" class="secondary-button">选择文件导入</button></article>
-          <article class="panel settings-card"><span class="card-icon">↑</span><h3>导出与备份</h3><p>Excel/CSV 适合继续处理，JSON 可完整恢复刷题笔记与设置。</p><div class="button-row"><a class="secondary-button" href="/api/export/xlsx">Excel</a><a class="secondary-button" href="/api/export/csv">CSV</a><a class="secondary-button" href="/api/export/json">完整备份</a></div></article>
+          <article class="panel settings-card"><span class="card-icon">↑</span><h3>导出与备份</h3><p>Markdown 适合整理 Hot 100 思路，JSON 可完整恢复刷题笔记与设置。</p><div class="button-row"><button id="exportHot100" class="secondary-button" type="button">Hot 100 思路</button><a class="secondary-button" href="/api/export/xlsx">Excel</a><a class="secondary-button" href="/api/export/csv">CSV</a><a class="secondary-button" href="/api/export/json">完整备份</a></div></article>
           <article class="panel settings-card"><span class="card-icon">♢</span><h3>后台提醒</h3><p>网页关闭后，本地服务仍会提醒笔试、面试和题目复习。</p><label class="toggle-row"><span><strong>启用提醒</strong><small>提前 <input id="leadHours" type="number" min="1" max="168"> 小时</small></span><input id="reminderToggle" type="checkbox" class="switch"></label><button id="testNotification" class="secondary-button">发送测试通知</button></article>
           <article class="panel settings-card path-card"><span class="card-icon">⌂</span><h3>本地存储位置</h3><p>应用数据、每日备份和运行日志均保存在项目目录内：</p><code>data · backups · logs</code><div class="storage-status"><i></i>本地服务运行正常</div></article>
         </div>
@@ -214,6 +214,6 @@
   </dialog>
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
-  <script src="/app.js?v=10" defer></script>
+  <script src="/app.js?v=11" defer></script>
 </body>
 </html>

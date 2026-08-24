@@ -6,6 +6,7 @@ import datetime as dt
 import io
 import json
 import os
+import re
 import subprocess
 import sys
 import threading
@@ -31,7 +32,7 @@ HOT100_FILE = DATA / "hot100.json"
 NOTIFY_SCRIPT = ROOT / "notify.ps1"
 HOST = "127.0.0.1"
 PORT = 8765
-APP_VERSION = "10"
+APP_VERSION = "11"
 STATE_LOCK = threading.RLock()
 STOP_EVENT = threading.Event()
 
@@ -272,6 +273,69 @@ def xlsx_bytes(applications: list[dict]) -> bytes:
     return output.getvalue()
 
 
+def demote_markdown_headings(markdown: str) -> str:
+    """Demote H1-H3 outside fenced code blocks without changing stored notes."""
+    output: list[str] = []
+    fence_character = ""
+    fence_length = 0
+    for line in markdown.splitlines(keepends=True):
+        fence = re.match(r"^[ ]{0,3}(`{3,}|~{3,})", line)
+        if fence:
+            marker = fence.group(1)
+            if not fence_character:
+                fence_character = marker[0]
+                fence_length = len(marker)
+            elif marker[0] == fence_character and len(marker) >= fence_length:
+                fence_character = ""
+                fence_length = 0
+            output.append(line)
+            continue
+        if not fence_character:
+            line = re.sub(r"^(#{1,3})([ \t]+)", lambda match: "#" * (len(match.group(1)) + 3) + match.group(2), line)
+        output.append(line)
+    return "".join(output)
+
+
+def markdown_heading(value: object) -> str:
+    return " ".join(str(value or "").replace("#", "").split()) or "未分类"
+
+
+def markdown_link_label(value: object) -> str:
+    return str(value or "").replace("\\", "\\\\").replace("[", "\\[").replace("]", "\\]").replace("\r", " ").replace("\n", " ")
+
+
+def hot100_markdown(state: dict) -> str:
+    """Build a grouped, read-only Markdown view of problems with non-empty thoughts."""
+    groups: dict[str, list[dict]] = {}
+    for problem in state.get("problems", []):
+        thoughts = str(problem.get("thoughts") or "")
+        if not thoughts.strip():
+            continue
+        category = str(problem.get("category") or "未分类")
+        groups.setdefault(category, []).append(problem)
+
+    parts = ["# Hot 100 刷题思路", ""]
+    for category, problems in groups.items():
+        parts.extend([f"## {markdown_heading(category)}", ""])
+        for problem in problems:
+            number = problem.get("number", "")
+            title = markdown_link_label(problem.get("title") or "未命名题目")
+            slug = str(problem.get("slug") or "").strip("/")
+            problem_url = f"https://leetcode.cn/problems/{slug}/" if slug else "https://leetcode.cn/problemset/"
+            difficulty = str(problem.get("difficulty") or "未标注")
+            parts.extend([
+                f"### [{number}. {title}]({problem_url})",
+                "",
+                f"> 难度：{difficulty} · 类型：{category}",
+                "",
+                demote_markdown_headings(str(problem.get("thoughts") or "")),
+                "",
+                "---",
+                "",
+            ])
+    return "\n".join(parts).rstrip() + "\n"
+
+
 def send_notification(title: str, message: str) -> dict:
     if not NOTIFY_SCRIPT.exists():
         return {"ok": False, "error": "通知脚本不存在"}
@@ -396,6 +460,11 @@ class Handler(SimpleHTTPRequestHandler):
         if path == "/api/export/json":
             payload = json.dumps(read_state(), ensure_ascii=False, indent=2).encode("utf-8")
             self.send_bytes(payload, "application/json; charset=utf-8", filename="career-board-backup.json")
+            return
+        if path == "/api/export/hot100.md":
+            payload = hot100_markdown(read_state()).encode("utf-8")
+            filename = f"hot100-notes-{dt.datetime.now():%Y%m%d}.md"
+            self.send_bytes(payload, "text/markdown; charset=utf-8", filename=filename)
             return
         if path == "/api/export/csv":
             output = io.StringIO()

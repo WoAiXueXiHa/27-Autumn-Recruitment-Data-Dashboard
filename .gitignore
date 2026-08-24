@@ -2,12 +2,15 @@
 data/state.json
 backups/*
 logs/*
+exports/
+hot100-notes-*.md
 
 # Python runtime files
 __pycache__/
 *.py[cod]
 .venv/
 venv/
+.test-tmp/
 
 # Editor and operating-system files
 .vscode/
@@ -15,4 +18,3 @@ venv/
 .DS_Store
 Thumbs.db
 desktop.ini
-
