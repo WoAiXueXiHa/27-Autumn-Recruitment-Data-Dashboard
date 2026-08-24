@@ -2,6 +2,11 @@ const JOB_STATUSES = ["待投递", "已投递", "笔试", "一面", "二面/多�
 const STATUS_GROUPS = ["待投递", "已投递", "笔试", "面试", "Offer"];
 const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
+const SEARCH_CONTEXTS = {
+  applications: { inputId: "jobSearch", placeholder: "搜索公司、岗位、城市", render: renderApplications },
+  reviews: { inputId: "reviewSearch", placeholder: "搜索公司、岗位或面试题", render: renderReviews },
+  hot100: { inputId: "problemSearch", placeholder: "搜索题号或题名", render: renderProblems },
+};
 
 let state = null;
 let currentView = "overview";
@@ -36,17 +41,21 @@ function bindStaticEvents() {
   $("#modalBackdrop").addEventListener("click", closeDialogs);
   $("#menuToggle").addEventListener("click", () => $(".sidebar").classList.toggle("open"));
   $("#themeToggle").addEventListener("click", cycleTheme);
-  $("#globalSearch").addEventListener("input", handleGlobalSearch);
+  $("#globalSearch").addEventListener("input", handleContextSearch);
+  $("#topPrimaryAction").addEventListener("click", handleTopPrimaryAction);
   $("#notificationButton").addEventListener("click", () => { switchView("overview"); $("#upcomingList").scrollIntoView({ behavior: "smooth" }); });
 
-  ["jobSearch", "jobStatusFilter", "jobPriorityFilter", "jobSort"].forEach(id => $("#" + id).addEventListener("input", renderApplications));
+  $("#jobSearch").addEventListener("input", () => handleModuleSearch("applications"));
+  ["jobStatusFilter", "jobPriorityFilter", "jobSort"].forEach(id => $("#" + id).addEventListener("input", renderApplications));
   $$("[data-job-view]").forEach(button => button.addEventListener("click", () => {
     jobView = button.dataset.jobView;
     $$("[data-job-view]").forEach(item => item.classList.toggle("active", item === button));
     renderApplications();
   }));
-  ["problemSearch", "problemCategory", "problemDifficulty", "problemStatus", "problemMastery", "problemSort"].forEach(id => $("#" + id).addEventListener("input", renderProblems));
-  ["reviewSearch", "reviewRoundFilter", "reviewResultFilter", "reviewSort"].forEach(id => $("#" + id).addEventListener("input", renderReviews));
+  $("#problemSearch").addEventListener("input", () => handleModuleSearch("hot100"));
+  ["problemCategory", "problemDifficulty", "problemStatus", "problemMastery", "problemSort"].forEach(id => $("#" + id).addEventListener("input", renderProblems));
+  $("#reviewSearch").addEventListener("input", () => handleModuleSearch("reviews"));
+  ["reviewRoundFilter", "reviewResultFilter", "reviewSort"].forEach(id => $("#" + id).addEventListener("input", renderReviews));
 
   $("#applicationForm").addEventListener("submit", saveApplicationForm);
   $("#problemForm").addEventListener("submit", saveProblemForm);
@@ -88,6 +97,7 @@ function renderAll() {
   renderApplications();
   renderReviews();
   renderProblems();
+  syncTopbarForView();
 }
 
 function switchView(view) {
@@ -97,6 +107,7 @@ function switchView(view) {
   const titles = { overview: "今天也向前一步。", applications: "让每次投递都有迹可循。", reviews: "把每次面试，变成下一次的底气。", hot100: "把不会的题，变成你的题。", data: "数据只属于你。" };
   $("#pageTitle").textContent = titles[view];
   $("#eyebrow").textContent = dateEyebrow();
+  syncTopbarForView();
   $(".sidebar").classList.remove("open");
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
@@ -202,7 +213,9 @@ function bindKanban() {
 }
 
 function getFilteredProblems() {
-  const query = $("#problemSearch").value.trim().toLowerCase().replace(/^#/, "");
+  const rawQuery = $("#problemSearch").value.trim().toLowerCase();
+  const query = rawQuery.replace(/^#/, "");
+  const exactNumber = /^#?\d+$/.test(rawQuery) ? query : "";
   const category = $("#problemCategory").value;
   const difficulty = $("#problemDifficulty").value;
   const status = $("#problemStatus").value;
@@ -211,7 +224,8 @@ function getFilteredProblems() {
   const order = { 简单: 1, 中等: 2, 困难: 3 };
   let problems = state.problems.filter(item => {
     const masteryMatches = !mastery || (mastery === "unset" ? ![1, 2, 3].includes(Number(item.mastery)) : Number(item.mastery) === Number(mastery));
-    return (!query || `${item.number} ${item.title}`.toLowerCase().includes(query)) && (!category || item.category === category) && (!difficulty || item.difficulty === difficulty) && (!status || item.status === status) && masteryMatches;
+    const queryMatches = !query || (exactNumber ? String(item.number) === exactNumber : item.title.toLowerCase().includes(query));
+    return queryMatches && (!category || item.category === category) && (!difficulty || item.difficulty === difficulty) && (!status || item.status === status) && masteryMatches;
   });
   if (sort === "number") problems.sort((a, b) => a.number - b.number);
   if (sort === "difficulty") problems.sort((a, b) => order[a.difficulty] - order[b.difficulty]);
@@ -711,14 +725,43 @@ async function testNotification() {
   } catch (error) { showToast(`通知失败：${error.message}`); }
 }
 
-function handleGlobalSearch(event) {
-  const query = event.target.value;
-  if (!query) return;
-  const problemMatch = /^#?\d+$/.test(query.trim()) || state.problems.some(item => item.title.includes(query));
-  switchView(problemMatch ? "hot100" : "applications");
-  const target = problemMatch ? $("#problemSearch") : $("#jobSearch");
-  target.value = query;
-  problemMatch ? renderProblems() : renderApplications();
+function syncTopbarForView() {
+  const search = $("#contextSearch");
+  const globalInput = $("#globalSearch");
+  const context = SEARCH_CONTEXTS[currentView];
+  search.hidden = !context;
+  if (context) {
+    const moduleInput = $("#" + context.inputId);
+    globalInput.placeholder = context.placeholder;
+    globalInput.value = moduleInput.value;
+    globalInput.setAttribute("aria-label", context.placeholder);
+  } else {
+    globalInput.value = "";
+  }
+
+  const action = $("#topPrimaryAction");
+  action.hidden = !["applications", "reviews"].includes(currentView);
+  if (currentView === "applications") action.textContent = "＋ 新增投递";
+  if (currentView === "reviews") action.textContent = "＋ 新增复盘";
+}
+
+function handleContextSearch(event) {
+  const context = SEARCH_CONTEXTS[currentView];
+  if (!context) return;
+  $("#" + context.inputId).value = event.target.value;
+  context.render();
+}
+
+function handleModuleSearch(view) {
+  const context = SEARCH_CONTEXTS[view];
+  if (!context) return;
+  if (currentView === view) $("#globalSearch").value = $("#" + context.inputId).value;
+  context.render();
+}
+
+function handleTopPrimaryAction() {
+  if (currentView === "applications") openApplicationDialog();
+  if (currentView === "reviews") openReviewDialog();
 }
 
 function cycleTheme() {

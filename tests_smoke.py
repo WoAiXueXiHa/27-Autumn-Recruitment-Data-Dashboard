@@ -38,7 +38,7 @@ def configure_temporary_storage(root: Path) -> None:
 
 def run_checks() -> None:
     health = json.loads(get("/api/health"))
-    assert health["ok"] is True and health["version"] == app.APP_VERSION == "11"
+    assert health["ok"] is True and health["version"] == app.APP_VERSION == "12"
 
     source = json.loads(app.HOT100_FILE.read_text(encoding="utf-8"))
     assert len(source) == 100
@@ -46,13 +46,19 @@ def run_checks() -> None:
     assert all(item["slug"] and item["title"] and item["difficulty"] and item["category"] for item in source)
 
     index = get("/").decode("utf-8")
-    script = get("/app.js?v=11").decode("utf-8")
-    style = get("/styles.css?v=11").decode("utf-8")
+    script = get("/app.js?v=12").decode("utf-8")
+    style = get("/styles.css?v=12").decode("utf-8")
     assert "view-reviews" in index and "reviewDialog" in index
     assert "leetcode.cn/problems/${problem.slug}/" in script
     assert "renderReviews" in script and "retrospective-card" in style
-    assert "2027 秋招计划 · v11" in index and "data-code-language" in index
+    assert "2027 秋招计划 · v12" in index and "data-code-language" in index
     assert "exportHot100" in index and "exportHot100Markdown" in script and "flushPendingSave" in script
+    assert 'id="contextSearch"' in index and 'id="topPrimaryAction"' in index
+    assert "SEARCH_CONTEXTS" in script and "handleContextSearch" in script and "handleModuleSearch" in script
+    assert "handleGlobalSearch" not in script and 'exactNumber ? String(item.number) === exactNumber' in script
+    assert '.toolbar .module-search { display: none; }' in style and '.toolbar .module-search { display: flex; }' in style
+    topbar_rule = style.split(".topbar {", 1)[1].split("}", 1)[0]
+    assert "position: sticky" not in topbar_rule and "top: 0" not in topbar_rule
     assert "renderMarkdown" in script and "highlightGo" in script and "hasMarkdownNotes" in script
     assert "CODE_LANGUAGE_CONFIGS" in script and "highlightMarkup" in script and "highlightJson" in script
     assert "tok-property" in style and "tok-tag" in style and "code-language" in style

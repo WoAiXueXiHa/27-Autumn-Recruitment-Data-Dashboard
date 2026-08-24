@@ -32,7 +32,7 @@ HOT100_FILE = DATA / "hot100.json"
 NOTIFY_SCRIPT = ROOT / "notify.ps1"
 HOST = "127.0.0.1"
 PORT = 8765
-APP_VERSION = "11"
+APP_VERSION = "12"
 STATE_LOCK = threading.RLock()
 STOP_EVENT = threading.Event()
 

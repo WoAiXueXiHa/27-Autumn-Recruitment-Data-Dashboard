@@ -6,14 +6,14 @@
   <meta name="theme-color" content="#f4f1ea">
   <title>求职作战室 · 秋招与 Hot 100</title>
   <meta name="description" content="本地运行的秋招投递与 LeetCode Hot 100 进度看板">
-  <link rel="stylesheet" href="/styles.css?v=11">
+  <link rel="stylesheet" href="/styles.css?v=12">
 </head>
 <body>
   <div class="app-shell">
     <aside class="sidebar">
       <div class="brand">
         <div class="brand-mark">W</div>
-        <div><strong>求职作战室</strong><span>2027 秋招计划 · v11</span></div>
+        <div><strong>求职作战室</strong><span>2027 秋招计划 · v12</span></div>
       </div>
       <nav class="nav" aria-label="主导航">
         <button class="nav-item active" data-view="overview"><span>◫</span>总览</button>
@@ -36,9 +36,9 @@
           <h1 id="pageTitle">今天也向前一步。</h1>
         </div>
         <div class="top-actions">
-          <label class="global-search"><span>⌕</span><input id="globalSearch" type="search" placeholder="搜索公司或题目…"></label>
+          <label id="contextSearch" class="global-search" hidden><span>⌕</span><input id="globalSearch" type="search" aria-label="当前模块搜索"></label>
           <button id="notificationButton" class="icon-button notify" aria-label="查看提醒">♢<b id="notificationCount">0</b></button>
-          <button class="primary-button" data-action="add-application">＋ 新增投递</button>
+          <button id="topPrimaryAction" class="primary-button" type="button" hidden></button>
         </div>
       </header>
 
@@ -72,7 +72,7 @@
           <div class="segmented"><button class="active" data-job-view="table">表格</button><button data-job-view="kanban">看板</button></div>
         </div>
         <div class="toolbar">
-          <label class="search-field"><span>⌕</span><input id="jobSearch" type="search" placeholder="搜索公司、岗位、城市"></label>
+          <label class="search-field module-search"><span>⌕</span><input id="jobSearch" type="search" placeholder="搜索公司、岗位、城市"></label>
           <select id="jobStatusFilter" aria-label="筛选投递状态"><option value="">全部进度</option></select>
           <select id="jobPriorityFilter" aria-label="筛选优先级"><option value="">全部优先级</option><option>高</option><option>中</option><option>低</option></select>
           <select id="jobSort" aria-label="投递排序"><option value="updated">最近更新</option><option value="applyDate-desc">投递日期 ↓</option><option value="company">公司 A–Z</option><option value="priority">优先级</option></select>
@@ -88,7 +88,7 @@
           <div id="hotSummary" class="mini-summary"></div>
         </div>
         <div class="toolbar hot-toolbar">
-          <label class="search-field"><span>⌕</span><input id="problemSearch" type="search" placeholder="搜索题号或题名"></label>
+          <label class="search-field module-search"><span>⌕</span><input id="problemSearch" type="search" placeholder="搜索题号或题名"></label>
           <select id="problemCategory"><option value="">全部类型</option></select>
           <select id="problemDifficulty"><option value="">全部难度</option><option>简单</option><option>中等</option><option>困难</option></select>
           <select id="problemStatus"><option value="">全部状态</option><option>未开始</option><option>进行中</option><option>已完成</option><option>待复习</option></select>
@@ -107,7 +107,7 @@
         </div>
         <div id="reviewStats" class="stats-grid review-stats"></div>
         <div class="toolbar">
-          <label class="search-field"><span>⌕</span><input id="reviewSearch" type="search" placeholder="搜索公司、岗位或面试题"></label>
+          <label class="search-field module-search"><span>⌕</span><input id="reviewSearch" type="search" placeholder="搜索公司、岗位或面试题"></label>
           <select id="reviewRoundFilter"><option value="">全部轮次</option><option>笔试</option><option>一面</option><option>二面</option><option>三面/多面</option><option>HR面</option><option>其他</option></select>
           <select id="reviewResultFilter"><option value="">全部结果</option><option>待定</option><option>通过</option><option>未通过</option><option>主动放弃</option></select>
           <select id="reviewSort"><option value="date-desc">面试日期 ↓</option><option value="rating-desc">自评分数 ↓</option><option value="company">公司 A–Z</option></select>
@@ -214,6 +214,6 @@
   </dialog>
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
-  <script src="/app.js?v=11" defer></script>
+  <script src="/app.js?v=12" defer></script>
 </body>
 </html>
