@@ -721,7 +721,8 @@ async function testNotification() {
     const response = await fetch("/api/notify-test", { method: "POST" });
     const result = await response.json();
     if (!response.ok || !result.ok) throw new Error(result.error || "未知错误");
-    showToast("测试通知已显示（Windows 托盘）");
+    const methodLabels = { "tray-balloon": "Windows 托盘", "macos-notification-center": "macOS 通知中心" };
+    showToast(`测试通知已显示（${methodLabels[result.method] || "系统通知"}）`);
   } catch (error) { showToast(`通知失败：${error.message}`); }
 }
 

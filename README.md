@@ -2,7 +2,7 @@
 
 ![求职作战室总览](./docs/images/overview.png)
 
-一个面向秋招、实习和校招准备的 Windows 本地看板，集中管理岗位投递、面经复盘与 LeetCode Hot 100 刷题记录。
+一个面向秋招、实习和校招准备的跨平台本地看板，集中管理岗位投递、面经复盘与 LeetCode Hot 100 刷题记录。
 
 项目使用 Python 标准库提供本地服务，不需要数据库、Node.js、云服务或第三方账号。所有个人数据只保存在项目目录中，网页关闭后仍可通过后台服务发送本地提醒。
 
@@ -125,15 +125,15 @@ func twoSum(nums []int, target int) []int {
 
 ## 运行要求
 
-- Windows 10 或 Windows 11。
-- Python 3.10 或更高版本，安装时勾选将 Python 加入 PATH。
+- Windows 10 / 11 或 macOS。
+- Python 3.10 或更高版本。Windows 安装时请勾选将 Python 加入 PATH。
 - 浏览器：Edge、Chrome、Firefox 等现代浏览器均可。
 
 应用仅使用 Python 标准库，不需要执行 `pip install`。
 
 ## 快速开始
 
-### 方式一：双击启动
+### Windows：双击启动
 
 1. 下载仓库并解压到一个长期保留的目录，路径中可以包含中文和空格。
 2. 双击 `启动看板.cmd`。
@@ -142,10 +142,33 @@ func twoSum(nums []int, target int) []int {
 
 启动脚本会先平滑停止旧实例，再启动当前目录中的最新版，并为打开地址添加唯一参数，避免浏览器复用旧页面缓存。
 
-### 方式二：命令行启动
+### macOS：脚本启动
+
+首次下载后，在终端进入项目目录并赋予脚本执行权限：
+
+```bash
+chmod +x start.sh stop.sh notify_macos.sh
+./start.sh
+```
+
+浏览器会在本地服务就绪后自动打开。需要完全停止服务和后台提醒时运行：
+
+```bash
+./stop.sh
+```
+
+### 命令行启动
+
+Windows：
 
 ```powershell
 py -3 app.py --open
+```
+
+macOS：
+
+```bash
+python3 app.py --open
 ```
 
 可选参数：
@@ -160,13 +183,12 @@ py -3 app.py --open
 
 | 文件 | 用途 |
 | --- | --- |
-| `启动看板.cmd` | 启动或刷新后台服务并打开看板 |
-| `停止看板.cmd` | 完全停止后台服务和提醒 |
-| `加入开机启动.cmd` | 在 Windows 启动文件夹中创建快捷方式 |
-| `取消开机启动.cmd` | 移除开机启动快捷方式 |
-| `start.cmd` / `stop.cmd` | 英文文件名的底层启动、停止脚本 |
+| `启动看板.cmd` / `停止看板.cmd` | Windows 启动、停止入口 |
+| `start.cmd` / `stop.cmd` | Windows 英文文件名入口 |
+| `start.sh` / `stop.sh` | macOS 启动、停止入口 |
+| `加入开机启动.cmd` / `取消开机启动.cmd` | Windows 开机启动管理 |
 
-浏览器标签页关闭并不等于停止服务。需要完全退出时，请双击 `停止看板.cmd`。
+浏览器标签页关闭并不等于停止服务。Windows 请双击 `停止看板.cmd`，macOS 请运行 `./stop.sh`。
 
 ## 配置开机启动
 
@@ -183,7 +205,7 @@ py -3 app.py --open
 3. 设置希望提前提醒的小时数。
 4. 点击“发送测试通知”。
 
-通知使用 Windows 托盘气泡，不需要安装额外模块或注册应用身份。若没有收到通知，请检查 Windows 的通知设置、勿扰模式，以及任务栏通知区域是否被系统策略禁用。测试按钮会根据通知脚本的真实退出结果显示成功或具体错误，不再无条件提示“已发送”。
+Windows 使用托盘气泡，macOS 使用系统通知中心，均不需要安装第三方 Python 模块。若没有收到通知，请检查系统通知设置和勿扰模式；macOS 还应确认终端或 Python 进程拥有通知权限。测试按钮会根据当前系统通知脚本的真实退出结果显示成功或具体错误。
 
 ## 数据保存位置
 
@@ -229,6 +251,7 @@ Excel、CSV 和 TSV 表头支持中文或英文常见写法。推荐字段如下
 求职作战室/
 ├─ app.py                 本地 HTTP 服务、数据读写、导入导出与提醒调度
 ├─ notify.ps1             Windows 系统通知脚本
+├─ notify_macos.sh        macOS 系统通知脚本
 ├─ static/
 │  ├─ index.html          页面结构
 │  ├─ styles.css          界面样式与深色模式
@@ -237,7 +260,8 @@ Excel、CSV 和 TSV 表头支持中文或英文常见写法。推荐字段如下
 │  └─ hot100.json         内置 Hot 100 题库
 ├─ tests_smoke.py         非破坏性冒烟测试
 ├─ launch.ps1             刷新服务并打开已确认版本的页面
-├─ start.cmd / stop.cmd   后台服务脚本
+├─ start.cmd / stop.cmd   Windows 后台服务脚本
+├─ start.sh / stop.sh     macOS 后台服务脚本
 └─ 启动看板.cmd 等         面向 Windows 用户的快捷入口
 ```
 
@@ -249,6 +273,12 @@ Excel、CSV 和 TSV 表头支持中文或英文常见写法。推荐字段如下
 
 ```powershell
 py -3 tests_smoke.py
+```
+
+macOS 使用：
+
+```bash
+python3 tests_smoke.py
 ```
 
 测试会启动一个临时端口，并将投递、面经、Markdown 和掌握程度测试数据全部写入被 Git 忽略的临时测试目录，不会读取或改写真实的 `data/state.json`，也不要求先启动看板。
@@ -272,7 +302,7 @@ PORT = 8765
 
 可以在提交前执行：
 
-```powershell
+```bash
 git status --short
 git check-ignore data/state.json logs/server.log hot100-notes-20260824.md
 ```
@@ -289,11 +319,11 @@ V12 起顶部搜索只作用于当前模块。需要搜索题目时先进入 Hot
 
 ### 端口 8765 被占用
 
-先双击 `停止看板.cmd`，再重新启动。若其他程序占用了该端口，可修改 `app.py` 中的 `PORT`。
+先停止旧服务再重新启动：Windows 双击 `停止看板.cmd`，macOS 运行 `./stop.sh`。若其他程序占用了该端口，可修改 `app.py` 中的 `PORT`。
 
 ### 网页关闭后为什么仍有后台进程
 
-这是为了继续自动保存和发送到期提醒。双击 `停止看板.cmd` 可完全退出。
+这是为了继续自动保存和发送到期提醒。请使用当前系统对应的停止脚本完全退出。
 
 ### 为什么 GitHub 中没有 `state.json`
 
@@ -301,14 +331,14 @@ V12 起顶部搜索只作用于当前模块。需要搜索题目时先进入 Hot
 
 ### 是否支持 macOS 或 Linux
 
-核心 Python 服务和网页大部分可以运行，但当前启动脚本、开机启动与系统通知针对 Windows 编写。其他系统可使用 `python3 app.py --open` 启动，但需要自行适配通知方式。
+macOS 已支持脚本启动、停止和系统通知。Linux 可以使用 `python3 app.py --open` 运行核心看板，但当前没有 Linux 原生通知适配。
 
 ## 参与贡献
 
 欢迎提交 Issue 和 Pull Request。建议在提交前：
 
 1. 确认没有提交个人投递、笔记、备份或日志。
-2. 启动本地服务并运行 `py -3 tests_smoke.py`。
+2. 启动本地服务并运行 `py -3 tests_smoke.py`（Windows）或 `python3 tests_smoke.py`（macOS）。
 3. 对新增功能补充必要测试与 README 说明。
 4. 保持离线优先，不引入不必要的联网依赖。
 
