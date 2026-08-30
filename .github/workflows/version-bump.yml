@@ -1,7 +1,9 @@
 name: Bump version after merge
 
 on:
-  pull_request:
+  # A merged PR from a fork receives a read-only token under pull_request.
+  # This event runs the trusted workflow from main and only checks out main.
+  pull_request_target:
     branches: [main]
     types: [closed]
 
