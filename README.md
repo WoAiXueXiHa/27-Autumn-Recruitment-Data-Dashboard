@@ -342,6 +342,26 @@ macOS 已支持脚本启动、停止和系统通知。Linux 可以使用 `python
 3. 对新增功能补充必要测试与 README 说明。
 4. 保持离线优先，不引入不必要的联网依赖。
 
+### Pull Request 自动检查
+
+每个面向 `main` 的 Pull Request 都会自动在 Windows、macOS 和 Linux 上运行隔离冒烟测试。请在 GitHub PR 页面确认 **Checks** 全部通过后再合并；测试不会读取、上传或修改本地个人数据。
+
+版本号由合并后的自动化流程统一递增，贡献者不需要手动修改 `VERSION`、页面版本号或文档版本号。
+
+macOS 用户可按以下流程参与贡献：
+
+```bash
+git clone https://github.com/<你的用户名>/27-Autumn-Recruitment-Data-Dashboard.git
+cd 27-Autumn-Recruitment-Data-Dashboard
+git checkout -b feature/your-change
+python3 tests_smoke.py
+git add .
+git commit -m "feat: describe your change"
+git push origin feature/your-change
+```
+
+随后在 GitHub 上创建指向上游 `main` 的 Pull Request。严禁提交 `data/state.json`、`backups/`、`logs/`、`exports/`、个人投递记录、面经、刷题笔记或密钥。
+
 ## 开源许可
 
 本项目由 **Vect** 以 [MIT License](LICENSE) 开源。

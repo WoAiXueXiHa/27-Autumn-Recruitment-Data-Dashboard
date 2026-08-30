@@ -38,7 +38,8 @@ def configure_temporary_storage(root: Path) -> None:
 
 def run_checks() -> None:
     health = json.loads(get("/api/health"))
-    assert health["ok"] is True and health["version"] == app.APP_VERSION == "12"
+    version_file = (app.ROOT / "VERSION").read_text(encoding="utf-8").strip()
+    assert health["ok"] is True and health["version"] == app.APP_VERSION == version_file
 
     source = json.loads(app.HOT100_FILE.read_text(encoding="utf-8"))
     assert len(source) == 100
@@ -46,12 +47,14 @@ def run_checks() -> None:
     assert all(item["slug"] and item["title"] and item["difficulty"] and item["category"] for item in source)
 
     index = get("/").decode("utf-8")
-    script = get("/app.js?v=12").decode("utf-8")
-    style = get("/styles.css?v=12").decode("utf-8")
+    script = get(f"/app.js?v={app.APP_VERSION}").decode("utf-8")
+    style = get(f"/styles.css?v={app.APP_VERSION}").decode("utf-8")
     assert "view-reviews" in index and "reviewDialog" in index
     assert "leetcode.cn/problems/${problem.slug}/" in script
     assert "renderReviews" in script and "retrospective-card" in style
-    assert "2027 秋招计划 · v12" in index and "data-code-language" in index
+    assert f"v{app.APP_VERSION}" in index and "{{APP_VERSION}}" not in index
+    assert f"/styles.css?v={app.APP_VERSION}" in index and f"/app.js?v={app.APP_VERSION}" in index
+    assert "data-code-language" in index
     assert "exportHot100" in index and "exportHot100Markdown" in script and "flushPendingSave" in script
     assert 'id="contextSearch"' in index and 'id="topPrimaryAction"' in index
     assert "SEARCH_CONTEXTS" in script and "handleContextSearch" in script and "handleModuleSearch" in script

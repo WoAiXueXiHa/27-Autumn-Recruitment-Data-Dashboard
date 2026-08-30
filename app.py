@@ -31,9 +31,24 @@ STATE_FILE = DATA / "state.json"
 HOT100_FILE = DATA / "hot100.json"
 WINDOWS_NOTIFY_SCRIPT = ROOT / "notify.ps1"
 MACOS_NOTIFY_SCRIPT = ROOT / "notify_macos.sh"
+NOTIFY_SCRIPT = WINDOWS_NOTIFY_SCRIPT
+VERSION_FILE = ROOT / "VERSION"
 HOST = "127.0.0.1"
 PORT = 8765
-APP_VERSION = "12"
+
+
+def read_app_version() -> str:
+    """Read the single public version source and fail fast when it is invalid."""
+    try:
+        version = VERSION_FILE.read_text(encoding="utf-8").strip()
+    except OSError as exc:
+        raise RuntimeError(f"Unable to read {VERSION_FILE.name}") from exc
+    if not version.isdecimal() or int(version) < 1:
+        raise RuntimeError(f"{VERSION_FILE.name} must contain one positive integer")
+    return version
+
+
+APP_VERSION = read_app_version()
 STATE_LOCK = threading.RLock()
 STOP_EVENT = threading.Event()
 
@@ -470,6 +485,11 @@ class Handler(SimpleHTTPRequestHandler):
 
     def do_GET(self) -> None:
         path = self.path.split("?", 1)[0]
+        if path in ("/", "/index.html"):
+            page = (STATIC / "index.html").read_text(encoding="utf-8")
+            page = page.replace("{{APP_VERSION}}", APP_VERSION)
+            self.send_bytes(page.encode("utf-8"), "text/html; charset=utf-8")
+            return
         if path == "/api/health":
             self.send_json({"ok": True, "version": APP_VERSION, "time": now_iso()})
             return

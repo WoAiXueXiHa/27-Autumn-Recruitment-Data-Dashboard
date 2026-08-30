@@ -6,14 +6,14 @@
   <meta name="theme-color" content="#f4f1ea">
   <title>求职作战室 · 秋招与 Hot 100</title>
   <meta name="description" content="本地运行的秋招投递与 LeetCode Hot 100 进度看板">
-  <link rel="stylesheet" href="/styles.css?v=12">
+  <link rel="stylesheet" href="/styles.css?v={{APP_VERSION}}">
 </head>
 <body>
   <div class="app-shell">
     <aside class="sidebar">
       <div class="brand">
         <div class="brand-mark">W</div>
-        <div><strong>求职作战室</strong><span>2027 秋招计划 · v12</span></div>
+        <div><strong>求职作战室</strong><span>2027 秋招计划 · v{{APP_VERSION}}</span></div>
       </div>
       <nav class="nav" aria-label="主导航">
         <button class="nav-item active" data-view="overview"><span>◫</span>总览</button>
@@ -214,6 +214,6 @@
   </dialog>
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
-  <script src="/app.js?v=12" defer></script>
+  <script src="/app.js?v={{APP_VERSION}}" defer></script>
 </body>
 </html>
