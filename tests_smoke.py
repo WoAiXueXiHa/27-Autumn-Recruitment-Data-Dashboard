@@ -65,7 +65,20 @@ def run_checks() -> None:
     assert "renderMarkdown" in script and "highlightGo" in script and "hasMarkdownNotes" in script
     assert "CODE_LANGUAGE_CONFIGS" in script and "highlightMarkup" in script and "highlightJson" in script
     assert "tok-property" in style and "tok-tag" in style and "code-language" in style
-    assert "Windows 托盘" in script and "tray-balloon" in app.NOTIFY_SCRIPT.read_text(encoding="utf-8")
+    assert "Windows 托盘" in script and "macOS 通知中心" in script
+    windows_command, windows_script = app.notification_command("测试标题", "测试内容", "win32")
+    macos_command, macos_script = app.notification_command("测试标题", "测试内容", "darwin")
+    assert windows_script == app.WINDOWS_NOTIFY_SCRIPT
+    assert windows_command[:2] == ["powershell.exe", "-NoProfile"]
+    assert "tray-balloon" in windows_script.read_text(encoding="utf-8")
+    assert macos_script == app.MACOS_NOTIFY_SCRIPT
+    assert macos_command[:2] == ["/bin/sh", str(app.MACOS_NOTIFY_SCRIPT)]
+    assert "display notification" in macos_script.read_text(encoding="utf-8")
+    assert app.notification_command("测试标题", "测试内容", "linux") is None
+    start_script = (app.ROOT / "start.sh").read_text(encoding="utf-8")
+    stop_script = (app.ROOT / "stop.sh").read_text(encoding="utf-8")
+    assert "nohup" in start_script and "api/health" in start_script
+    assert "app.py --stop" in start_script and "app.py --stop" in stop_script
 
     original = json.loads(get("/api/state"))
     assert len(original["problems"]) == 100

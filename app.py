@@ -29,7 +29,9 @@ BACKUPS = ROOT / "backups"
 LOGS = ROOT / "logs"
 STATE_FILE = DATA / "state.json"
 HOT100_FILE = DATA / "hot100.json"
-NOTIFY_SCRIPT = ROOT / "notify.ps1"
+WINDOWS_NOTIFY_SCRIPT = ROOT / "notify.ps1"
+MACOS_NOTIFY_SCRIPT = ROOT / "notify_macos.sh"
+NOTIFY_SCRIPT = WINDOWS_NOTIFY_SCRIPT
 VERSION_FILE = ROOT / "VERSION"
 HOST = "127.0.0.1"
 PORT = 8765
@@ -350,13 +352,31 @@ def hot100_markdown(state: dict) -> str:
     return "\n".join(parts).rstrip() + "\n"
 
 
+def notification_command(title: str, message: str, platform_name: str | None = None) -> tuple[list[str], Path] | None:
+    """Return the native notification command for a supported platform."""
+    current_platform = platform_name or sys.platform
+    if current_platform == "win32":
+        command = [
+            "powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass",
+            "-File", str(WINDOWS_NOTIFY_SCRIPT), title, message,
+        ]
+        return command, WINDOWS_NOTIFY_SCRIPT
+    if current_platform == "darwin":
+        return ["/bin/sh", str(MACOS_NOTIFY_SCRIPT), title, message], MACOS_NOTIFY_SCRIPT
+    return None
+
+
 def send_notification(title: str, message: str) -> dict:
-    if not NOTIFY_SCRIPT.exists():
-        return {"ok": False, "error": "通知脚本不存在"}
+    backend = notification_command(title, message)
+    if backend is None:
+        return {"ok": False, "error": f"当前系统暂不支持本地通知：{sys.platform}"}
+    command, script = backend
+    if not script.exists():
+        return {"ok": False, "error": f"通知脚本不存在：{script.name}"}
     flags = getattr(subprocess, "CREATE_NO_WINDOW", 0)
     try:
         result = subprocess.run(
-            ["powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", str(NOTIFY_SCRIPT), title, message],
+            command,
             check=False, timeout=15, creationflags=flags, capture_output=True, text=True, encoding="utf-8", errors="replace",
         )
         if result.returncode != 0:
